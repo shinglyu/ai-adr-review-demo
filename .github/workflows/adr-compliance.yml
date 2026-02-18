@@ -77,8 +77,8 @@ jobs:
           
           echo ""
           if [ $VIOLATIONS -gt 0 ]; then
-            echo "⚠️  Found $VIOLATIONS potential ADR violation(s)"
-            echo "👉 GitHub Copilot will provide detailed review feedback"
+            echo "❌ Found $VIOLATIONS potential ADR violation(s) - pipeline failed"
+            exit 1
           else
             echo "✅ No obvious ADR violations detected in automated check"
             echo "👉 GitHub Copilot will perform final review"
