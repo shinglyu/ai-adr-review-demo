@@ -12,7 +12,7 @@ export class AuthorController {
    * ✅ Delegates to service
    */
   async getAuthor(req: any, res: any) {
-    const authorId = parseInt(req.params.id);
+    const authorId = req.params.id;  // Now using UUID strings
     const author = await authorService.findById(authorId);
     
     if (!author) {
