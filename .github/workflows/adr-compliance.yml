@@ -8,6 +8,9 @@ jobs:
   adr-compliance:
     runs-on: ubuntu-latest
     name: Check ADR Compliance
+    permissions:
+      contents: read
+      pull-requests: read
     
     steps:
       - name: Checkout code
