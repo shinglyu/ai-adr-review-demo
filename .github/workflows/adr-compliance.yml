@@ -1,0 +1,115 @@
+name: Architecture Compliance Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  adr-compliance:
+    runs-on: ubuntu-latest
+    name: Check ADR Compliance
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+        with:
+          files: |
+            src/**/*.ts
+            src/**/*.js
+
+      - name: Display changed files
+        run: |
+          echo "Changed files:"
+          echo "${{ steps.changed-files.outputs.all_changed_files }}"
+
+      - name: Check for ADR violations
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "🔍 Checking for ADR violations..."
+          echo ""
+          echo "📋 Active ADRs:"
+          echo "  - ADR-0001: Use Numeric IDs (docs/adr/0001-numeric-ids.md)"
+          echo "  - ADR-0002: Standard Response Envelope (docs/adr/0002-response-envelope.md)"
+          echo "  - ADR-0003: Service Layer Pattern (docs/adr/0003-service-layer.md)"
+          echo ""
+          echo "Changed files will be reviewed by GitHub Copilot against these ADRs."
+          echo ""
+          echo "⚠️  Manual Review Required:"
+          echo "  GitHub Copilot Code Review should check the following:"
+          echo ""
+          
+          VIOLATIONS=0
+          
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "Checking: $file"
+            
+            # Check for UUID violations (ADR-0001)
+            if grep -q "id:.*uuid\|id:.*string\|import.*uuid" "$file" 2>/dev/null; then
+              echo "  ⚠️  Possible ADR-0001 violation: May use UUID/string IDs instead of numeric"
+              VIOLATIONS=$((VIOLATIONS + 1))
+            fi
+            
+            # Check for unwrapped responses (ADR-0002)
+            if grep -q "res\.json({[^}]*})" "$file" 2>/dev/null; then
+              if ! grep -q "res\.json({ data:" "$file" 2>/dev/null; then
+                echo "  ⚠️  Possible ADR-0002 violation: Response may lack 'data' envelope"
+                VIOLATIONS=$((VIOLATIONS + 1))
+              fi
+            fi
+            
+            # Check for DB logic in controllers (ADR-0003)
+            if echo "$file" | grep -q "controllers/"; then
+              if grep -q "db\.\|\.find(\|\.save(\|\.create(\|\.update(\|\.delete(" "$file" 2>/dev/null; then
+                echo "  ⚠️  Possible ADR-0003 violation: Controller may contain DB operations"
+                VIOLATIONS=$((VIOLATIONS + 1))
+              fi
+            fi
+          done
+          
+          echo ""
+          if [ $VIOLATIONS -gt 0 ]; then
+            echo "⚠️  Found $VIOLATIONS potential ADR violation(s)"
+            echo "👉 GitHub Copilot will provide detailed review feedback"
+          else
+            echo "✅ No obvious ADR violations detected in automated check"
+            echo "👉 GitHub Copilot will perform final review"
+          fi
+
+      - name: ADR Documentation Check
+        run: |
+          echo "📚 Verifying ADR documentation exists..."
+          
+          if [ ! -f "docs/adr/0001-numeric-ids.md" ]; then
+            echo "❌ Missing ADR-0001"
+            exit 1
+          fi
+          
+          if [ ! -f "docs/adr/0002-response-envelope.md" ]; then
+            echo "❌ Missing ADR-0002"
+            exit 1
+          fi
+          
+          if [ ! -f "docs/adr/0003-service-layer.md" ]; then
+            echo "❌ Missing ADR-0003"
+            exit 1
+          fi
+          
+          echo "✅ All ADR documents present"
+
+      - name: Summary
+        run: |
+          echo "## Architecture Compliance Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "This PR has been checked against the following ADRs:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ **ADR-0001**: Use Numeric IDs - \`docs/adr/0001-numeric-ids.md\`" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ **ADR-0002**: Standard Response Envelope - \`docs/adr/0002-response-envelope.md\`" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ **ADR-0003**: Service Layer Pattern - \`docs/adr/0003-service-layer.md\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Next Step**: GitHub Copilot Code Review will provide detailed feedback based on \`.github/copilot-instructions.md\`" >> $GITHUB_STEP_SUMMARY
