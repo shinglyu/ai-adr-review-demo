@@ -9,35 +9,24 @@ For every pull request, you **must** cross-reference the code changes against th
 ## Review Process
 
 ### 1. Check Against ADRs
-Before approving any PR, verify compliance with these architectural rules:
+Before approving any PR, **read and analyze all ADR files** in the `docs/adr/` directory to understand the architectural rules.
 
-#### ADR-0001: Numeric IDs Only
-- **Location:** `docs/adr/0001-numeric-ids.md`
-- **Rule:** All resource IDs must be numeric integers (`id: number`)
-- **Check:** Look for UUID usage, string-based IDs, or GUID patterns in models
-- **Violation Examples:**
-  - `id: string` or `id: uuid` in any model interface
-  - Using UUID libraries for primary keys
-  - String-based identifiers in database schemas
+**Process:**
+1. List all files in `docs/adr/` directory
+2. Read each ADR file to understand:
+   - The architectural rule being enforced
+   - Examples of compliant code
+   - Examples of violations
+   - Rationale and consequences
+3. Cross-reference code changes in the PR against each ADR
+4. Flag any violations found
 
-#### ADR-0002: Standard Response Envelope
-- **Location:** `docs/adr/0002-response-envelope.md`
-- **Rule:** All API responses must be wrapped in `{ "data": <payload> }`
-- **Check:** Ensure controllers return properly enveloped responses
-- **Violation Examples:**
-  - `res.json({ status: 'ok' })` - missing data wrapper
-  - `return { id: 1, name: 'Book' }` - raw object return
-  - Any response not following `{ "data": ... }` pattern
+**Key ADR locations to check:**
+- `docs/adr/0001-numeric-ids.md` - ID format requirements
+- `docs/adr/0002-response-envelope.md` - API response structure
+- `docs/adr/0003-service-layer.md` - Architecture layer separation
 
-#### ADR-0003: Service Layer Pattern
-- **Location:** `docs/adr/0003-service-layer.md`
-- **Rule:** Business logic and database operations MUST be in services, NOT controllers
-- **Check:** Controllers should only handle HTTP concerns
-- **Violation Examples:**
-  - `db.books.save()` in a controller
-  - `await Model.find()` in controller methods
-  - Direct database queries in `src/controllers/`
-  - Business logic calculations in controllers
+Read the actual ADR files for complete rules, examples, and violation patterns. Do not rely on summaries - always reference the full ADR documentation.
 
 ### 2. Review Severity
 
