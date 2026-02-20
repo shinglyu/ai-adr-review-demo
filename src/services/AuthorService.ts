@@ -6,10 +6,10 @@ import { Author } from '../models/Author';
  */
 
 // Mock database
-const db = {
+const db: { authors: Author[] } = {
   authors: [
-    { id: 42, name: "F. Scott Fitzgerald", email: "fitzgerald@example.com", bio: "American novelist" },
-    { id: 43, name: "Harper Lee", email: "lee@example.com", bio: "American novelist" }
+    { id: 42, name: "F. Scott Fitzgerald", email: "fitzgerald@example.com", bio: "American novelist", birthDate: "1896-09-24", deathDate: "1940-12-21" },
+    { id: 43, name: "Harper Lee", email: "lee@example.com", bio: "American novelist", birthDate: "1926-04-28", deathDate: "2016-02-19" }
   ]
 };
 

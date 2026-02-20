@@ -7,6 +7,8 @@ export interface Author {
   name: string;
   email: string;
   bio?: string;
+  birthDate?: string;
+  deathDate?: string;
 }
 
 /**
@@ -16,5 +18,7 @@ export const exampleAuthor: Author = {
   id: 42,
   name: "F. Scott Fitzgerald",
   email: "fitzgerald@example.com",
-  bio: "American novelist and short story writer"
+  bio: "American novelist and short story writer",
+  birthDate: "1896-09-24",
+  deathDate: "1940-12-21"
 };
