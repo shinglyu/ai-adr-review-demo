@@ -1,31 +1,29 @@
+import { randomUUID } from 'crypto';
 import { Author } from '../models/Author';
 
 /**
  * AuthorService
- * Compliant with ADR-0003: Contains business logic and DB operations
  */
 
 // Mock database
 const db: { authors: Author[] } = {
   authors: [
-    { id: 42, name: "F. Scott Fitzgerald", email: "fitzgerald@example.com", bio: "American novelist", birthDate: "1896-09-24", deathDate: "1940-12-21" },
-    { id: 43, name: "Harper Lee", email: "lee@example.com", bio: "American novelist", birthDate: "1926-04-28", deathDate: "2016-02-19" }
+    { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890", name: "F. Scott Fitzgerald", email: "fitzgerald@example.com", bio: "American novelist", birthDate: "1896-09-24", deathDate: "1940-12-21" },
+    { id: "b2c3d4e5-f6a7-8901-bcde-f12345678901", name: "Harper Lee", email: "lee@example.com", bio: "American novelist", birthDate: "1926-04-28", deathDate: "2016-02-19" }
   ]
 };
 
 export class AuthorService {
   /**
    * Find an author by ID
-   * ✅ Compliant with ADR-0003: Data access in service layer
    */
-  async findById(id: number): Promise<Author | null> {
+  async findById(id: string): Promise<Author | null> {
     const author = db.authors.find(a => a.id === id);
     return author || null;
   }
 
   /**
    * Get all authors
-   * ✅ Compliant with ADR-0003: Data access in service layer
    */
   async findAll(): Promise<Author[]> {
     return db.authors;
@@ -33,11 +31,10 @@ export class AuthorService {
 
   /**
    * Create a new author
-   * ✅ Compliant with ADR-0003: Business logic in service
    */
   async create(authorData: Omit<Author, 'id'>): Promise<Author> {
     const newAuthor: Author = {
-      id: db.authors.length + 1,
+      id: randomUUID(),
       ...authorData
     };
     db.authors.push(newAuthor);
