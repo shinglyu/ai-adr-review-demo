@@ -10,7 +10,7 @@ jobs:
     name: Check ADR Compliance
     permissions:
       contents: read
-      pull-requests: read
+      pull-requests: write
     
     steps:
       - name: Checkout code
@@ -31,58 +31,19 @@ jobs:
           echo "Changed files:"
           echo "${{ steps.changed-files.outputs.all_changed_files }}"
 
-      - name: Check for ADR violations
+      - name: Request Copilot Code Review
         if: steps.changed-files.outputs.any_changed == 'true'
-        run: |
-          echo "🔍 Checking for ADR violations..."
-          echo ""
-          echo "📋 Active ADRs:"
-          echo "  - ADR-0001: Use Numeric IDs (docs/adr/0001-numeric-ids.md)"
-          echo "  - ADR-0002: Standard Response Envelope (docs/adr/0002-response-envelope.md)"
-          echo "  - ADR-0003: Service Layer Pattern (docs/adr/0003-service-layer.md)"
-          echo ""
-          echo "Changed files will be reviewed by GitHub Copilot against these ADRs."
-          echo ""
-          echo "⚠️  Manual Review Required:"
-          echo "  GitHub Copilot Code Review should check the following:"
-          echo ""
-          
-          VIOLATIONS=0
-          
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            echo "Checking: $file"
-            
-            # Check for UUID violations (ADR-0001)
-            if grep -q "id:.*uuid\|id:.*string\|import.*uuid" "$file" 2>/dev/null; then
-              echo "  ⚠️  Possible ADR-0001 violation: May use UUID/string IDs instead of numeric"
-              VIOLATIONS=$((VIOLATIONS + 1))
-            fi
-            
-            # Check for unwrapped responses (ADR-0002)
-            if grep -q "res\.json({[^}]*})" "$file" 2>/dev/null; then
-              if ! grep -q "res\.json({ data:" "$file" 2>/dev/null; then
-                echo "  ⚠️  Possible ADR-0002 violation: Response may lack 'data' envelope"
-                VIOLATIONS=$((VIOLATIONS + 1))
-              fi
-            fi
-            
-            # Check for DB logic in controllers (ADR-0003)
-            if echo "$file" | grep -q "controllers/"; then
-              if grep -q "db\.\|\.find(\|\.save(\|\.create(\|\.update(\|\.delete(" "$file" 2>/dev/null; then
-                echo "  ⚠️  Possible ADR-0003 violation: Controller may contain DB operations"
-                VIOLATIONS=$((VIOLATIONS + 1))
-              fi
-            fi
-          done
-          
-          echo ""
-          if [ $VIOLATIONS -gt 0 ]; then
-            echo "⚠️  Found $VIOLATIONS potential ADR violation(s)"
-            echo "👉 GitHub Copilot will provide detailed review feedback"
-          else
-            echo "✅ No obvious ADR violations detected in automated check"
-            echo "👉 GitHub Copilot will perform final review"
-          fi
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              reviewers: ['copilot']
+            });
+            core.info('✅ GitHub Copilot Code Review requested — Copilot will check changed files against ADR-0001, ADR-0002, and ADR-0003 per .github/copilot-instructions.md');
 
       - name: ADR Documentation Check
         run: |
