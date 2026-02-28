@@ -1,6 +1,6 @@
 # Architecture Compliance Agent Demo
 
-A demonstration repository showcasing automated **Architecture Decision Record (ADR) compliance** using **GitHub Copilot Code Review**.
+A demonstration repository showcasing automated **Architecture Decision Record (ADR) compliance** using **GitHub Copilot Code Review**. The sample application is a **bookstore API** built with Node.js/TypeScript, providing endpoints to manage books, authors, and orders.
 
 ## 🎯 Project Goal
 
